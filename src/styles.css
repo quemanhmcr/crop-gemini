@@ -1,0 +1,145 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: transparent;
+  cursor: crosshair;
+  user-select: none;
+}
+
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.25);
+  transition: background 0.15s ease;
+}
+
+#overlay.selecting {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#selection-box {
+  position: absolute;
+  border: 2px dashed #00d4ff;
+  background: rgba(0, 212, 255, 0.08);
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(0, 212, 255, 0.3),
+    inset 0 0 30px rgba(0, 212, 255, 0.05);
+  display: none;
+  pointer-events: none;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+#selection-box.visible {
+  display: block;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    border-color: #00d4ff;
+    box-shadow: 
+      0 0 0 1px rgba(0, 0, 0, 0.3),
+      0 0 20px rgba(0, 212, 255, 0.3),
+      inset 0 0 30px rgba(0, 212, 255, 0.05);
+  }
+  50% {
+    border-color: #00ffaa;
+    box-shadow: 
+      0 0 0 1px rgba(0, 0, 0, 0.3),
+      0 0 30px rgba(0, 255, 170, 0.4),
+      inset 0 0 40px rgba(0, 255, 170, 0.08);
+  }
+}
+
+#instructions {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(50, 50, 50, 0.9));
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 212, 255, 0.2);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+#instructions span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#coordinates {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #00d4ff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  display: none;
+  z-index: 1000;
+}
+
+#coordinates.visible {
+  display: block;
+}
+
+/* Corner handles for selection box */
+#selection-box::before,
+#selection-box::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #00ffaa;
+}
+
+#selection-box::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+#selection-box::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+}

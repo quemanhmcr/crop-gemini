@@ -1,0 +1,39 @@
+[package]
+name = "crop-gpt"
+version = "0.1.0"
+description = "Quick Screenshot to ChatGPT"
+authors = ["you"]
+edition = "2021"
+
+[lib]
+name = "crop_gpt_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-global-shortcut = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Screen capture
+xcap = "0.0.14"
+
+# Image processing
+image = "0.25"
+
+# Clipboard with image support
+arboard = { version = "3", features = ["image-data"] }
+
+# Open URLs in browser
+open = "5"
+
+# Keyboard simulation for auto-paste
+enigo = "0.3"
+
+# Windows API for window detection
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser"] }
