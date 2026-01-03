@@ -101,7 +101,7 @@ fn do_paste() {
 }
 
 #[tauri::command]
-fn capture_region(x: i32, y: i32, width: u32, height: u32) -> Result<String, String> {
+fn capture_region(x: i32, y: i32, width: u32, height: u32, scale_factor: f64) -> Result<String, String> {
     // Capture primary monitor
     let monitors = xcap::Monitor::all().map_err(|e| format!("Monitor error: {}", e))?;
     let monitor = monitors.first().ok_or("No monitor found")?;
@@ -112,10 +112,11 @@ fn capture_region(x: i32, y: i32, width: u32, height: u32) -> Result<String, Str
     let img_width = screenshot.width();
     let img_height = screenshot.height();
     
-    let x = (x.max(0) as u32).min(img_width.saturating_sub(1));
-    let y = (y.max(0) as u32).min(img_height.saturating_sub(1));
-    let width = width.min(img_width.saturating_sub(x));
-    let height = height.min(img_height.saturating_sub(y));
+    // Scale coordinates from logical to physical pixels
+    let x = ((x as f64 * scale_factor).round() as u32).min(img_width.saturating_sub(1));
+    let y = ((y as f64 * scale_factor).round() as u32).min(img_height.saturating_sub(1));
+    let width = ((width as f64 * scale_factor).round() as u32).min(img_width.saturating_sub(x));
+    let height = ((height as f64 * scale_factor).round() as u32).min(img_height.saturating_sub(y));
 
     if width == 0 || height == 0 {
         return Err("Invalid selection region".to_string());

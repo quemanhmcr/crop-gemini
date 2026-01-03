@@ -54,7 +54,8 @@ async function captureAndOpen(x, y, width, height) {
       x: Math.round(x),
       y: Math.round(y),
       width: Math.round(width),
-      height: Math.round(height)
+      height: Math.round(height),
+      scaleFactor: window.devicePixelRatio
     });
 
     console.log(result);
