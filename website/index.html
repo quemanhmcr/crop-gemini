@@ -4,81 +4,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CropGemini - Screenshot to Gemini</title>
+    <title>CropGemini - Trợ lý AI Tinh tế</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material Symbols -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div class="container">
-        <header class="hero">
-            <div class="logo">
-                <span class="logo-icon">📷</span>
+
+        <header>
+            <div class="brand">
+                <span class="material-symbols-rounded">crop</span>
                 <h1>CropGemini</h1>
             </div>
-            <p class="tagline">Chụp màn hình, gửi Gemini - chỉ 1 phím tắt</p>
+
+            <h2 class="headline">Hỗ trợ công việc của bạn <br>một cách lặng thầm.</h2>
+            <p class="subhead">Chụp màn hình, tự động gửi Gemini, nhận phản hồi ngay lập tức. Đơn giản, tinh tế và luôn
+                sẵn sàng.</p>
+
+            <div class="download-area">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <a href="https://github.com/quemanhmcr/crop-gemini/releases/latest/download/CropGemini_0.1.0_x64-setup.exe"
+                        class="fab-extended" id="downloadBtn">
+                        <span class="material-symbols-rounded fab-icon">download</span>
+                        <span>Tải về cho Windows</span>
+                    </a>
+                    <div class="meta-info">
+                        <span>v<span id="version">0.1.0</span></span>
+                        <span>•</span>
+                        <span>Siêu nhẹ (~1.6 MB)</span>
+                        <span>•</span>
+                        <span>Windows 10/11</span>
+                    </div>
+                </div>
+            </div>
         </header>
 
-        <main>
-            <section class="features">
-                <div class="feature">
-                    <span class="feature-icon">⚡</span>
-                    <h3>Nhanh chóng</h3>
-                    <p>Ctrl+Shift+Q → Chọn vùng → Tự động paste</p>
+        <section class="grid">
+            <div class="card">
+                <div class="icon-box">
+                    <span class="material-symbols-rounded">bolt</span>
                 </div>
-                <div class="feature">
-                    <span class="feature-icon">🎯</span>
-                    <h3>Chính xác</h3>
-                    <p>Chọn chính xác vùng bạn muốn hỏi Gemini</p>
-                </div>
-                <div class="feature">
-                    <span class="feature-icon">🪶</span>
-                    <h3>Nhẹ nhàng</h3>
-                    <p>Chỉ 1MB, chạy ngầm không tốn tài nguyên</p>
-                </div>
-            </section>
+                <h3>Dòng chảy công việc</h3>
+                <p>Không cần mở browser, không cần copy paste thủ công. Chỉ 01 phím tắt để kết nối suy nghĩ của bạn với
+                    AI.</p>
+            </div>
 
-            <section class="download-section">
-                <a href="https://github.com/quemanhmcr/crop-gemini/releases/latest/download/CropGemini_0.1.0_x64-setup.exe"
-                    class="download-btn" id="downloadBtn">
-                    <span class="btn-icon">⬇️</span>
-                    <span class="btn-text">
-                        <span class="btn-primary">Download cho Windows</span>
-                        <span class="btn-secondary">v<span id="version">0.1.0</span> • 1MB</span>
-                    </span>
-                </a>
-                <p class="requirement">Yêu cầu: Windows 10/11 64-bit</p>
-            </section>
+            <div class="card">
+                <div class="icon-box">
+                    <span class="material-symbols-rounded">select_all</span>
+                </div>
+                <h3>Chính xác tuyệt đối</h3>
+                <p>Chọn đúng vùng thông tin bạn cần. CropGemini xử lý phần còn lại, mở Gemini và dán ảnh ngay lập tức.
+                </p>
+            </div>
 
-            <section class="how-to">
-                <h2>Cách sử dụng</h2>
-                <ol>
-                    <li>Cài đặt và chạy app (chạy ngầm trên taskbar)</li>
-                    <li>Nhấn <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Q</kbd></li>
-                    <li>Kéo chọn vùng màn hình cần hỏi</li>
-                    <li>App tự động mở Gemini và paste hình!</li>
-                </ol>
-            </section>
-        </main>
+            <div class="card">
+                <div class="icon-box">
+                    <span class="material-symbols-rounded">memory</span>
+                </div>
+                <h3>Tàng hình</h3>
+                <p>Chạy ngầm với tài nguyên gần như bằng 0. Sử dụng Rust cho hiệu năng tối đa và footprint tối thiểu.
+                </p>
+            </div>
+        </section>
+
+        <section class="usage-section">
+            <h2>Sử dụng trong 3 bước</h2>
+            <div class="step-list">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <p>Nhấn tổ hợp <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Q</kbd></p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <p>Kéo chuột chọn vùng màn hình chứa câu hỏi hoặc lỗi cần tra cứu</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <p>Gemini tự động mở ra với hình ảnh của bạn. Chỉ cần gõ thêm câu lệnh!</p>
+                </div>
+            </div>
+        </section>
 
         <footer>
-            <p>
-                <a href="https://github.com/quemanhmcr/crop-gemini" target="_blank">GitHub</a> •
-                Made with ❤️ for productivity
-            </p>
+            <p>Mã nguồn mở trên <a href="https://github.com/quemanhmcr/crop-gemini" target="_blank">GitHub</a>. Xây dựng
+                vì sự hiệu quả.</p>
         </footer>
     </div>
 
     <script>
-        // Fetch latest version from GitHub API
+        // Auto-fetch latest version
         fetch('https://api.github.com/repos/quemanhmcr/crop-gemini/releases/latest')
             .then(r => r.json())
             .then(data => {
                 if (data.tag_name) {
                     const version = data.tag_name.replace('v', '');
                     document.getElementById('version').textContent = version;
-                    // Update download link
                     const asset = data.assets.find(a => a.name.endsWith('-setup.exe'));
                     if (asset) {
                         document.getElementById('downloadBtn').href = asset.browser_download_url;
