@@ -1,0 +1,204 @@
+:root {
+    --primary: #4285f4;
+    --primary-dark: #3367d6;
+    --bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0f0f23 100%);
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --text: #e4e4e7;
+    --text-muted: #a1a1aa;
+    --accent: #00d4ff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.logo-icon {
+    font-size: 2.5rem;
+    filter: drop-shadow(0 0 20px var(--accent));
+}
+
+.logo h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff, var(--accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tagline {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+}
+
+/* Features */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.feature {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.feature:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.feature h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.feature p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* Download Button */
+.download-section {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    text-decoration: none;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 32px rgba(66, 133, 244, 0.3);
+}
+
+.download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(66, 133, 244, 0.4);
+}
+
+.btn-icon {
+    font-size: 1.5rem;
+}
+
+.btn-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.btn-primary {
+    font-size: 1.1rem;
+}
+
+.btn-secondary {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.requirement {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* How to */
+.how-to {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+}
+
+.how-to h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.how-to ol {
+    padding-left: 1.5rem;
+}
+
+.how-to li {
+    margin-bottom: 0.75rem;
+    color: var(--text-muted);
+}
+
+.how-to li::marker {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+kbd {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 0.2em 0.5em;
+    font-family: inherit;
+    font-size: 0.85em;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
