@@ -134,8 +134,8 @@ fn capture_region(x: i32, y: i32, width: u32, height: u32) -> Result<String, Str
 
     clipboard.set_image(img_data).map_err(|e| format!("Clipboard set error: {}", e))?;
 
-    // Open Gemini
-    let _ = open::that("https://gemini.google.com/app");
+    // Open Gemini using the opener plugin (no need for separate 'open' crate)
+    let _ = tauri_plugin_opener::open_url("https://gemini.google.com/app", None::<&str>);
 
     // Smart wait and paste when Gemini window is focused
     wait_and_paste();
