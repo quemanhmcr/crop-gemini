@@ -49,30 +49,75 @@ function showSnackbar(message, type = '', action = null) {
   }, 6000);
 }
 
+// Pending update state - tracks downloaded update ready to install on quit
+let pendingUpdate = null;
+let updateDownloading = false;
+
 async function checkForAppUpdates() {
   try {
+    // Check if auto-update is disabled
     const settings = await invoke('plugin:store|get', { key: 'settings', path: 'settings.json' }).catch(() => null);
     if (settings && settings.autoUpdate === false) return;
 
-    const metadata = await invoke('plugin:updater|check');
-    if (metadata && metadata.available) {
-      showSnackbar(`Phiên bản ${metadata.version} đã sẵn sàng`, 'info', {
-        label: 'Cập nhật',
-        onClick: async () => {
-          showSnackbar('Đang tải xuống...', 'info');
-          try {
-            await invoke('plugin:updater|download_and_install', { rid: metadata.rid });
-            await invoke('plugin:process|relaunch');
-          } catch (e) {
-            showSnackbar('Lỗi cập nhật: ' + e, 'error');
-          }
-        }
-      });
+    const { check } = window.__TAURI_PLUGIN_UPDATER__;
+    const update = await check();
+
+    if (update) {
+      console.log(`Update available: ${update.version}`);
+      showUpdateNotification(update);
     }
   } catch (error) {
     console.error('Failed to check for updates:', error);
   }
 }
+
+function showUpdateNotification(update) {
+  showSnackbar(`Có phiên bản ${update.version} mới`, 'info', {
+    label: 'Tải xuống',
+    onClick: () => downloadUpdate(update)
+  });
+}
+
+async function downloadUpdate(update) {
+  if (updateDownloading) return;
+
+  try {
+    updateDownloading = true;
+    showSnackbar('Đang tải bản cập nhật...', 'info');
+
+    let downloaded = 0;
+    let contentLength = 0;
+
+    await update.downloadAndInstall((event) => {
+      switch (event.event) {
+        case 'Started':
+          contentLength = event.data.contentLength || 0;
+          console.log(`Download started, size: ${contentLength}`);
+          break;
+        case 'Progress':
+          downloaded += event.data.chunkLength;
+          if (contentLength > 0) {
+            const percent = Math.round((downloaded / contentLength) * 100);
+            console.log(`Download progress: ${percent}%`);
+          }
+          break;
+        case 'Finished':
+          console.log('Download finished');
+          break;
+      }
+    });
+
+    // If we reach here, update was installed and app will restart
+    // This is actually called BEFORE restart, so we can show a message
+    showSnackbar('Đang cài đặt bản cập nhật...', 'success');
+
+  } catch (error) {
+    console.error('Update download failed:', error);
+    showSnackbar('Lỗi tải cập nhật: ' + error, 'error');
+    updateDownloading = false;
+  }
+}
+
 
 // Open settings window
 window.openSettings = openSettings;
