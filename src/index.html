@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CropGPT - Select Region</title>
-  </head>
-  <body>
-    <div id="overlay">
-      <div id="selection-box"></div>
-      <div id="instructions">
-        <span>🎯 Kéo thả để chọn vùng | ESC để hủy</span>
-      </div>
-      <div id="coordinates"></div>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CropGPT - Select Region</title>
+</head>
+
+<body>
+  <div id="overlay">
+    <div id="selection-box"></div>
+    <div id="instructions">
+      <span>🎯 Kéo thả để chọn vùng | ESC để hủy</span>
+      <button id="settings-btn" class="icon-btn" onclick="openSettings()" title="Cài đặt">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+      </button>
     </div>
-    <script type="module" src="main.js"></script>
-  </body>
+    <div id="coordinates"></div>
+  </div>
+  <div id="snackbar" class="snackbar"></div>
+  <script type="module" src="main.js"></script>
+</body>
+
 </html>

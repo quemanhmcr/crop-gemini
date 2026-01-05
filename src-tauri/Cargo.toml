@@ -34,6 +34,8 @@ arboard = { version = "3", default-features = false, features = ["image-data"] }
 
 # Keyboard simulation for auto-paste
 enigo = "0.3"
+tauri-plugin-store = "2"
+tauri-plugin-process = "2"
 
 # Windows API for window detection
 [target.'cfg(windows)'.dependencies]

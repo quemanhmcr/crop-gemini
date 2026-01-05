@@ -3,7 +3,8 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": [
-    "main"
+    "main",
+    "settings"
   ],
   "permissions": [
     "core:default",
@@ -12,10 +13,15 @@
     "core:window:allow-close",
     "core:window:allow-set-fullscreen",
     "core:window:allow-set-focus",
+    "core:window:allow-create",
+    "core:webview:allow-create-webview-window",
     "opener:default",
     "global-shortcut:default",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
-    "global-shortcut:allow-is-registered"
+    "global-shortcut:allow-is-registered",
+    "store:default",
+    "updater:default",
+    "process:default"
   ]
 }

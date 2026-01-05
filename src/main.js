@@ -1,5 +1,115 @@
-const { invoke } = window.__TAURI__.core;
-const { getCurrentWindow } = window.__TAURI__.window;
+console.log("Script starting...");
+let invoke, getCurrentWindow;
+
+try {
+  if (!window.__TAURI__) {
+    throw new Error("window.__TAURI__ is undefined");
+  }
+  console.log("TAURI Object:", window.__TAURI__);
+
+  invoke = window.__TAURI__.core.invoke;
+  getCurrentWindow = window.__TAURI__.window.getCurrentWindow;
+} catch (e) {
+  console.error("Initialization error:", e);
+  alert("Initialization error: " + e.message);
+}
+
+// Snackbar notification system
+let snackbar = null;
+let snackbarTimeout = null;
+
+function showSnackbar(message, type = '', action = null) {
+  if (!snackbar) {
+    snackbar = document.getElementById('snackbar');
+    if (!snackbar) {
+      // Create snackbar if it doesn't exist
+      snackbar = document.createElement('div');
+      snackbar.id = 'snackbar';
+      snackbar.className = 'snackbar';
+      document.body.appendChild(snackbar);
+    }
+  }
+
+  if (snackbarTimeout) clearTimeout(snackbarTimeout);
+
+  snackbar.innerHTML = `<span>${message}</span>`;
+  if (action) {
+    const btn = document.createElement('button');
+    btn.className = 'snackbar-action';
+    btn.textContent = action.label;
+    btn.onclick = action.onClick;
+    snackbar.appendChild(btn);
+  }
+
+  snackbar.className = 'snackbar show';
+  if (type) snackbar.classList.add(type);
+
+  snackbarTimeout = setTimeout(() => {
+    snackbar.classList.remove('show');
+  }, 6000);
+}
+
+async function checkForAppUpdates() {
+  try {
+    const settings = await invoke('plugin:store|get', { key: 'settings', path: 'settings.json' }).catch(() => null);
+    if (settings && settings.autoUpdate === false) return;
+
+    const metadata = await invoke('plugin:updater|check');
+    if (metadata && metadata.available) {
+      showSnackbar(`Phiên bản ${metadata.version} đã sẵn sàng`, 'info', {
+        label: 'Cập nhật',
+        onClick: async () => {
+          showSnackbar('Đang tải xuống...', 'info');
+          try {
+            await invoke('plugin:updater|download_and_install', { rid: metadata.rid });
+            await invoke('plugin:process|relaunch');
+          } catch (e) {
+            showSnackbar('Lỗi cập nhật: ' + e, 'error');
+          }
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to check for updates:', error);
+  }
+}
+
+// Open settings window
+window.openSettings = openSettings;
+
+async function openSettings() {
+  try {
+    const { WebviewWindow, getAllWindows } = window.__TAURI__.window;
+
+    // Try to find existing settings window
+    const allWindows = await getAllWindows();
+    let settingsWin = allWindows.find(w => w.label === 'settings');
+
+    if (settingsWin) {
+      // Window exists, show and focus it
+      await settingsWin.show();
+      await settingsWin.setFocus();
+    } else {
+      // Create new settings window
+      settingsWin = new WebviewWindow('settings', {
+        url: 'settings.html',
+        title: 'Cài đặt - CropGemini',
+        width: 420,
+        height: 580,
+        center: true,
+        decorations: false,
+        alwaysOnTop: true,
+        resizable: false
+      });
+
+      settingsWin.once('tauri://error', (e) => {
+        console.error('Failed to create settings window:', e);
+      });
+    }
+  } catch (e) {
+    console.error('Failed to open settings:', e);
+  }
+}
 
 let isSelecting = false;
 let startX = 0;
@@ -88,6 +198,9 @@ function updateSelectionBox(e) {
 function onMouseDown(e) {
   if (e.button !== 0) return; // Only left click
 
+  // Don't start selection if clicking on settings button
+  if (e.target.closest('#settings-btn')) return;
+
   isSelecting = true;
   startX = e.clientX;
   startY = e.clientY;
@@ -155,4 +268,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Also reset on initial load
   resetOverlay();
+  // Check for updates
+  checkForAppUpdates();
 });
