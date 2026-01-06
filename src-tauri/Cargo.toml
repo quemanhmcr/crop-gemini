@@ -1,6 +1,6 @@
 [package]
 name = "crop-gpt"
-version = "2.0.1"
+version = "2.0.4"
 description = "Quick Screenshot to Gemini"
 authors = ["you"]
 edition = "2021"
