@@ -18,7 +18,7 @@ try {
 let snackbar = null;
 let snackbarTimeout = null;
 
-function showSnackbar(message, type = '', action = null) {
+function showSnackbar(message, type = '', action = null, duration = 6000) {
   if (!snackbar) {
     snackbar = document.getElementById('snackbar');
     if (!snackbar) {
@@ -44,9 +44,13 @@ function showSnackbar(message, type = '', action = null) {
   snackbar.className = 'snackbar show';
   if (type) snackbar.classList.add(type);
 
-  snackbarTimeout = setTimeout(() => {
-    snackbar.classList.remove('show');
-  }, 6000);
+  // Don't auto-dismiss if there's an action button (user needs to interact)
+  // Otherwise use the specified duration
+  if (!action) {
+    snackbarTimeout = setTimeout(() => {
+      snackbar.classList.remove('show');
+    }, duration);
+  }
 }
 
 // Pending update state - tracks downloaded update ready to install on quit
@@ -86,11 +90,110 @@ async function checkForAppUpdates() {
   }
 }
 
-function showUpdateNotification(update) {
-  showSnackbar(`Có phiên bản ${update.version} mới`, 'info', {
-    label: 'Tải xuống',
-    onClick: () => downloadUpdate(update)
-  });
+async function showUpdateNotification(update) {
+  try {
+    const { WebviewWindow } = window.__TAURI__.window;
+
+    // Create a small popup window for update notification
+    const updateWin = new WebviewWindow('update-popup', {
+      url: `data:text/html,${encodeURIComponent(`
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 20px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    h3 { margin-bottom: 10px; font-size: 16px; }
+    p { font-size: 13px; color: #a0a0a0; margin-bottom: 20px; }
+    .version { color: #4ade80; font-weight: bold; }
+    .buttons { display: flex; gap: 10px; }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .primary {
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      color: white;
+    }
+    .primary:hover { transform: scale(1.05); }
+    .secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .secondary:hover { background: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+  <h3>🎉 Có bản cập nhật mới!</h3>
+  <p>Phiên bản <span class="version">${update.version}</span> đã sẵn sàng</p>
+  <div class="buttons">
+    <button class="primary" onclick="window.__TAURI__.event.emit('update-action', 'download')">Tải xuống</button>
+    <button class="secondary" onclick="window.__TAURI__.event.emit('update-action', 'later')">Để sau</button>
+  </div>
+  <script>window.__TAURI__ = window.__TAURI__ || parent.__TAURI__;</script>
+</body>
+</html>
+      `)}`,
+      title: 'Cập nhật CropGemini',
+      width: 320,
+      height: 180,
+      center: true,
+      decorations: false,
+      alwaysOnTop: true,
+      resizable: false,
+      skipTaskbar: true
+    });
+
+    // Listen for user action
+    const { listen } = window.__TAURI__.event;
+    const unlisten = await listen('update-action', async (event) => {
+      if (event.payload === 'download') {
+        // Close popup and start download
+        const win = await updateWin;
+        await win.close();
+        await downloadUpdate(update);
+      } else {
+        // Just close popup
+        const win = await updateWin;
+        await win.close();
+      }
+      unlisten();
+    });
+
+    // Auto-close popup after 30 seconds if no action
+    setTimeout(async () => {
+      try {
+        const win = await updateWin;
+        await win.close();
+        unlisten();
+      } catch (e) { /* already closed */ }
+    }, 30000);
+
+  } catch (error) {
+    console.error('[UPDATER] Failed to show update popup:', error);
+    // Fallback to snackbar if popup fails
+    showSnackbar(`Có phiên bản ${update.version} mới`, 'info', {
+      label: 'Tải xuống',
+      onClick: () => downloadUpdate(update)
+    });
+  }
 }
 
 async function downloadUpdate(update) {

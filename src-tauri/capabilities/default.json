@@ -4,7 +4,8 @@
   "description": "Capability for the main window",
   "windows": [
     "main",
-    "settings"
+    "settings",
+    "update-popup"
   ],
   "permissions": [
     "core:default",
@@ -15,6 +16,8 @@
     "core:window:allow-set-focus",
     "core:window:allow-create",
     "core:webview:allow-create-webview-window",
+    "core:event:allow-emit",
+    "core:event:allow-listen",
     "opener:default",
     "global-shortcut:default",
     "global-shortcut:allow-register",
