@@ -54,20 +54,35 @@ let pendingUpdate = null;
 let updateDownloading = false;
 
 async function checkForAppUpdates() {
+  console.log('[UPDATER] Starting update check...');
   try {
     // Check if auto-update is disabled
     const settings = await invoke('plugin:store|get', { key: 'settings', path: 'settings.json' }).catch(() => null);
-    if (settings && settings.autoUpdate === false) return;
+    console.log('[UPDATER] Settings:', settings);
+    if (settings && settings.autoUpdate === false) {
+      console.log('[UPDATER] Auto-update disabled, skipping');
+      return;
+    }
+
+    console.log('[UPDATER] Checking __TAURI_PLUGIN_UPDATER__:', window.__TAURI_PLUGIN_UPDATER__);
+    if (!window.__TAURI_PLUGIN_UPDATER__) {
+      console.error('[UPDATER] Updater plugin not available!');
+      return;
+    }
 
     const { check } = window.__TAURI_PLUGIN_UPDATER__;
+    console.log('[UPDATER] Calling check()...');
     const update = await check();
+    console.log('[UPDATER] Check result:', update);
 
     if (update) {
-      console.log(`Update available: ${update.version}`);
+      console.log(`[UPDATER] Update available: ${update.version}`);
       showUpdateNotification(update);
+    } else {
+      console.log('[UPDATER] No update available or already on latest version');
     }
   } catch (error) {
-    console.error('Failed to check for updates:', error);
+    console.error('[UPDATER] Failed to check for updates:', error);
   }
 }
 

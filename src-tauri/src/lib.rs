@@ -355,6 +355,9 @@ pub fn run() {
             // Hide window on startup
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.hide();
+                // Open devtools in debug mode
+                #[cfg(debug_assertions)]
+                window.open_devtools();
             }
 
             Ok(())
