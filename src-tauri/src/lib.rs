@@ -347,7 +347,7 @@ fn reload_shortcut(app: AppHandle) -> Result<String, String> {
         .register(quick_open_shortcut)
         .map_err(|e| format!("Failed to register quick-open shortcut: {}", e))?;
 
-    println!("[RELOAD] Shortcuts reloaded: crop={:?}, quick_open={:?}", crop_shortcut, quick_open_shortcut);
+    println!("[RELOAD] Shortcuts reloaded");
     Ok("Shortcuts reloaded successfully".to_string())
 }
 
@@ -374,11 +374,8 @@ pub fn run() {
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(move |app, shortcut, event| {
                     if event.state() == ShortcutState::Pressed {
-                        println!("[SHORTCUT] Received: {:?}", shortcut);
-                        
                         // Check if it's the crop shortcut
                         if shortcut == &*crop_sc {
-                            println!("[SHORTCUT] Crop shortcut triggered");
                             if let Some(window) = app.get_webview_window("main") {
                                 let _ = window.show();
                                 let _ = window.set_focus();
@@ -386,11 +383,8 @@ pub fn run() {
                         }
                         // Check if it's the quick-open shortcut
                         else if shortcut == &*quick_open_sc {
-                            println!("[SHORTCUT] Quick-open shortcut triggered");
-                            // Get AI URL from settings
                             let settings = get_settings(app);
                             let ai_url = settings.ai_url.unwrap_or_else(|| DEFAULT_AI_URL.to_string());
-                            println!("[SHORTCUT] Opening: {}", ai_url);
                             let _ = tauri_plugin_opener::open_url(&ai_url, None::<&str>);
                         }
                     }
@@ -405,9 +399,6 @@ pub fn run() {
                 .unwrap_or(*crop_shortcut_arc);
             let quick_open_shortcut = build_quick_open_shortcut_from_settings(&settings)
                 .unwrap_or(*quick_open_shortcut_arc);
-
-            println!("[INIT] Registering crop shortcut: {:?}", crop_shortcut);
-            println!("[INIT] Registering quick-open shortcut: {:?}", quick_open_shortcut);
 
             // Register the shortcuts
             app.global_shortcut().register(crop_shortcut)?;
