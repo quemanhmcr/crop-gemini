@@ -33,16 +33,26 @@ jobs:
 
       - name: Debug Signing Key
         run: |
-          echo "Key length: $($env:TAURI_SIGNING_PRIVATE_KEY.Length)"
-          echo "Key starts with: $($env:TAURI_SIGNING_PRIVATE_KEY.Substring(0,20))..."
+          if ($env:TAURI_SIGNING_PRIVATE_KEY) {
+            echo "Key is configured (length: $($env:TAURI_SIGNING_PRIVATE_KEY.Length))"
+          } else {
+            echo "ERROR: TAURI_SIGNING_PRIVATE_KEY is not set!"
+          }
+          if ($env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD) {
+            echo "Password is configured"
+          } else {
+            echo "ERROR: TAURI_SIGNING_PRIVATE_KEY_PASSWORD is not set!"
+          }
         env:
-          TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5OVBvK1IvSC9iK3d1RW5WVTRjY0ZpNGNFemlvU0lOVk15dk5xdWVHQTJRb0FBQkFBQUFBQUFBQUFBQUlBQUFBQUFpYVU0QjNSZ25PdzEveWpTMEFKWCtQd2ZwTTJzRXA2WkF5cGpXUXRUQjVaUUtEY0daMGNWVDZTMlpxeU5ITGxvOGhhL2lSV3J4ejFhMGpYdHR6bHJpbjB0L0NGMEVTdGs0bXIvOVAwWitBNFpjQkMvaDRMNU9QOFE0eDdKNG8wb1FxSWt3VlVBaHM9Cg=="
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Build Tauri App
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5OVBvK1IvSC9iK3d1RW5WVTRjY0ZpNGNFemlvU0lOVk15dk5xdWVHQTJRb0FBQkFBQUFBQUFBQUFBQUlBQUFBQUFpYVU0QjNSZ25PdzEveWpTMEFKWCtQd2ZwTTJzRXA2WkF5cGpXUXRUQjVaUUtEY0daMGNWVDZTMlpxeU5ITGxvOGhhL2lSV3J4ejFhMGpYdHR6bHJpbjB0L0NGMEVTdGs0bXIvOVAwWitBNFpjQkMvaDRMNU9QOFE0eDdKNG8wb1FxSWt3VlVBaHM9Cg=="
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'CropGemini ${{ github.ref_name }}'
