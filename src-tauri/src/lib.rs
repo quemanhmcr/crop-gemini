@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use arboard::Clipboard;
 use enigo::{Direction, Enigo, Key, Keyboard, Settings};
 use serde::{Deserialize, Serialize};
@@ -25,6 +26,8 @@ struct AppSettings {
     #[serde(rename = "aiUrl")]
     ai_url: Option<String>,
     shortcut: Option<ShortcutConfig>,
+    #[serde(rename = "quickOpenShortcut")]
+    quick_open_shortcut: Option<ShortcutConfig>,
     #[serde(rename = "autoUpdate")]
     auto_update: Option<bool>,
 }
@@ -151,6 +154,10 @@ fn get_settings(app: &AppHandle) -> AppSettings {
             modifiers: vec!["Control".to_string(), "Shift".to_string()],
             key: "Q".to_string(),
         }),
+        quick_open_shortcut: Some(ShortcutConfig {
+            modifiers: vec!["Control".to_string(), "Shift".to_string()],
+            key: "W".to_string(),
+        }),
         auto_update: Some(true),
     }
 }
@@ -245,6 +252,21 @@ fn build_shortcut_from_settings(settings: &AppSettings) -> Option<Shortcut> {
     }
 }
 
+/// Build quick-open shortcut from settings
+fn build_quick_open_shortcut_from_settings(settings: &AppSettings) -> Option<Shortcut> {
+    if let Some(ref shortcut_config) = settings.quick_open_shortcut {
+        let code = string_to_code(&shortcut_config.key)?;
+        let modifiers = strings_to_modifiers(&shortcut_config.modifiers);
+        Some(Shortcut::new(modifiers, code))
+    } else {
+        // Default: Ctrl+Shift+W
+        Some(Shortcut::new(
+            Some(Modifiers::CONTROL | Modifiers::SHIFT),
+            Code::KeyW,
+        ))
+    }
+}
+
 #[tauri::command]
 fn capture_region(
     app: AppHandle,
@@ -304,53 +326,92 @@ fn capture_region(
 fn reload_shortcut(app: AppHandle) -> Result<String, String> {
     let settings = get_settings(&app);
 
-    // Build new shortcut from settings
-    let new_shortcut = build_shortcut_from_settings(&settings)
-        .ok_or_else(|| "Invalid shortcut configuration".to_string())?;
+    // Build shortcuts from settings
+    let crop_shortcut = build_shortcut_from_settings(&settings)
+        .ok_or_else(|| "Invalid crop shortcut configuration".to_string())?;
+    
+    let quick_open_shortcut = build_quick_open_shortcut_from_settings(&settings)
+        .ok_or_else(|| "Invalid quick-open shortcut configuration".to_string())?;
 
-    // Unregister all shortcuts and register the new one
+    // Unregister all shortcuts first
     app.global_shortcut()
         .unregister_all()
         .map_err(|e| format!("Failed to unregister shortcuts: {}", e))?;
 
+    // Re-register both shortcuts
     app.global_shortcut()
-        .on_shortcut(new_shortcut, |app, _shortcut, event| {
-            if event.state == ShortcutState::Pressed {
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
-                }
-            }
-        })
-        .map_err(|e| format!("Failed to register shortcut: {}", e))?;
+        .register(crop_shortcut)
+        .map_err(|e| format!("Failed to register crop shortcut: {}", e))?;
+    
+    app.global_shortcut()
+        .register(quick_open_shortcut)
+        .map_err(|e| format!("Failed to register quick-open shortcut: {}", e))?;
 
-    Ok("Shortcut reloaded successfully".to_string())
+    println!("[RELOAD] Shortcuts reloaded: crop={:?}, quick_open={:?}", crop_shortcut, quick_open_shortcut);
+    Ok("Shortcuts reloaded successfully".to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Default shortcuts for initial setup
+    let default_crop_shortcut = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyQ);
+    let default_quick_open_shortcut = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyW);
+    
+    // Wrap in Arc for sharing across closures
+    let crop_shortcut_arc = Arc::new(default_crop_shortcut);
+    let quick_open_shortcut_arc = Arc::new(default_quick_open_shortcut);
+    
+    // Clone for the handler closure
+    let crop_sc = Arc::clone(&crop_shortcut_arc);
+    let quick_open_sc = Arc::clone(&quick_open_shortcut_arc);
+    
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .setup(|app| {
-            // Load settings and register shortcut
-            let settings = get_settings(&app.handle());
-            let shortcut = build_shortcut_from_settings(&settings).unwrap_or_else(|| {
-                Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyQ)
-            });
-
-            app.global_shortcut()
-                .on_shortcut(shortcut, |app, _shortcut, event| {
-                    if event.state == ShortcutState::Pressed {
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(move |app, shortcut, event| {
+                    if event.state() == ShortcutState::Pressed {
+                        println!("[SHORTCUT] Received: {:?}", shortcut);
+                        
+                        // Check if it's the crop shortcut
+                        if shortcut == &*crop_sc {
+                            println!("[SHORTCUT] Crop shortcut triggered");
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                        }
+                        // Check if it's the quick-open shortcut
+                        else if shortcut == &*quick_open_sc {
+                            println!("[SHORTCUT] Quick-open shortcut triggered");
+                            // Get AI URL from settings
+                            let settings = get_settings(app);
+                            let ai_url = settings.ai_url.unwrap_or_else(|| DEFAULT_AI_URL.to_string());
+                            println!("[SHORTCUT] Opening: {}", ai_url);
+                            let _ = tauri_plugin_opener::open_url(&ai_url, None::<&str>);
                         }
                     }
-                })?;
+                })
+                .build()
+        )
+        .setup(move |app| {
+            // Load settings and determine actual shortcuts to use
+            let settings = get_settings(&app.handle());
+            
+            let crop_shortcut = build_shortcut_from_settings(&settings)
+                .unwrap_or(*crop_shortcut_arc);
+            let quick_open_shortcut = build_quick_open_shortcut_from_settings(&settings)
+                .unwrap_or(*quick_open_shortcut_arc);
+
+            println!("[INIT] Registering crop shortcut: {:?}", crop_shortcut);
+            println!("[INIT] Registering quick-open shortcut: {:?}", quick_open_shortcut);
+
+            // Register the shortcuts
+            app.global_shortcut().register(crop_shortcut)?;
+            app.global_shortcut().register(quick_open_shortcut)?;
 
             // Hide window on startup
             if let Some(window) = app.get_webview_window("main") {

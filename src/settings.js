@@ -7,18 +7,21 @@ const { load } = window.__TAURI_PLUGIN_STORE__;
 const DEFAULT_SETTINGS = {
     aiUrl: 'https://gemini.google.com/app',
     shortcut: { modifiers: ['Control', 'Shift'], key: 'Q' },
+    quickOpenShortcut: { modifiers: ['Control', 'Shift'], key: 'W' },
     autoUpdate: true
 };
 
 let currentSettings = { ...DEFAULT_SETTINGS };
 let originalSettings = null;
 let isRecordingShortcut = false;
+let isRecordingQuickOpenShortcut = false;
 let isSaving = false;
 let store = null;
 
 // DOM Elements
 let aiServiceSelect, customUrlGroup, customUrlInput, urlHint;
 let shortcutBtn, shortcutDisplay;
+let quickOpenShortcutBtn, quickOpenShortcutDisplay;
 let autoUpdateToggle;
 let snackbar, saveBtn, cancelBtn, versionSpan, unsavedBadge;
 
@@ -37,6 +40,8 @@ function initDOMReferences() {
     urlHint = document.getElementById('url-hint');
     shortcutBtn = document.getElementById('shortcut-input');
     shortcutDisplay = document.getElementById('shortcut-display');
+    quickOpenShortcutBtn = document.getElementById('quick-open-shortcut-input');
+    quickOpenShortcutDisplay = document.getElementById('quick-open-shortcut-display');
     autoUpdateToggle = document.getElementById('auto-update');
     snackbar = document.getElementById('snackbar');
     saveBtn = document.getElementById('save-btn');
@@ -98,6 +103,7 @@ function applySettingsToUI() {
 
     // Shortcut
     updateShortcutDisplay();
+    updateQuickOpenShortcutDisplay();
 
     // Auto-update
     autoUpdateToggle.checked = currentSettings.autoUpdate;
@@ -107,6 +113,12 @@ function updateShortcutDisplay() {
     const { modifiers, key } = currentSettings.shortcut;
     const parts = [...modifiers.map(m => m === 'Control' ? 'Ctrl' : m), key];
     shortcutDisplay.textContent = parts.join(' + ');
+}
+
+function updateQuickOpenShortcutDisplay() {
+    const { modifiers, key } = currentSettings.quickOpenShortcut;
+    const parts = [...modifiers.map(m => m === 'Control' ? 'Ctrl' : m), key];
+    quickOpenShortcutDisplay.textContent = parts.join(' + ');
 }
 
 function hasUnsavedChanges() {
@@ -173,8 +185,9 @@ function setupEventListeners() {
         updateUnsavedIndicator();
     });
 
-    // Shortcut recorder
+    // Shortcut recorders
     shortcutBtn.addEventListener('click', startShortcutRecording);
+    quickOpenShortcutBtn.addEventListener('click', startQuickOpenShortcutRecording);
     document.addEventListener('keydown', handleShortcutKeydown);
 
     // Auto-update toggle
@@ -188,7 +201,7 @@ function setupEventListeners() {
 
     // ESC to close
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !isRecordingShortcut) {
+        if (e.key === 'Escape' && !isRecordingShortcut && !isRecordingQuickOpenShortcut) {
             handleClose();
         }
     });
@@ -204,12 +217,22 @@ async function handleClose() {
 
 function startShortcutRecording() {
     isRecordingShortcut = true;
+    isRecordingQuickOpenShortcut = false;
     shortcutBtn.classList.add('recording');
+    quickOpenShortcutBtn.classList.remove('recording');
     shortcutDisplay.textContent = 'Nhấn tổ hợp phím...';
 }
 
+function startQuickOpenShortcutRecording() {
+    isRecordingQuickOpenShortcut = true;
+    isRecordingShortcut = false;
+    quickOpenShortcutBtn.classList.add('recording');
+    shortcutBtn.classList.remove('recording');
+    quickOpenShortcutDisplay.textContent = 'Nhấn tổ hợp phím...';
+}
+
 function handleShortcutKeydown(e) {
-    if (!isRecordingShortcut) return;
+    if (!isRecordingShortcut && !isRecordingQuickOpenShortcut) return;
 
     // Ignore modifier-only presses
     if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
@@ -224,9 +247,16 @@ function handleShortcutKeydown(e) {
     // Require at least one modifier
     if (modifiers.length === 0) {
         showSnackbar('Vui lòng sử dụng ít nhất một phím Ctrl, Shift hoặc Alt', 'error');
-        isRecordingShortcut = false;
-        shortcutBtn.classList.remove('recording');
-        updateShortcutDisplay();
+        if (isRecordingShortcut) {
+            isRecordingShortcut = false;
+            shortcutBtn.classList.remove('recording');
+            updateShortcutDisplay();
+        }
+        if (isRecordingQuickOpenShortcut) {
+            isRecordingQuickOpenShortcut = false;
+            quickOpenShortcutBtn.classList.remove('recording');
+            updateQuickOpenShortcutDisplay();
+        }
         return;
     }
 
@@ -234,11 +264,17 @@ function handleShortcutKeydown(e) {
     let key = e.key.toUpperCase();
     if (key === ' ') key = 'Space';
 
-    currentSettings.shortcut = { modifiers, key };
-
-    isRecordingShortcut = false;
-    shortcutBtn.classList.remove('recording');
-    updateShortcutDisplay();
+    if (isRecordingShortcut) {
+        currentSettings.shortcut = { modifiers, key };
+        isRecordingShortcut = false;
+        shortcutBtn.classList.remove('recording');
+        updateShortcutDisplay();
+    } else if (isRecordingQuickOpenShortcut) {
+        currentSettings.quickOpenShortcut = { modifiers, key };
+        isRecordingQuickOpenShortcut = false;
+        quickOpenShortcutBtn.classList.remove('recording');
+        updateQuickOpenShortcutDisplay();
+    }
     updateUnsavedIndicator();
 }
 
